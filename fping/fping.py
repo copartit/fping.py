@@ -54,7 +54,7 @@ class FastPing(object):
             raise SystemError('Executable fping file not found.')
         else:
             self.fping = spawn.find_executable('fping')
-            if subprocess.check_output([self.fping, '-v']).find('csv') < 0:
+            if str(subprocess.check_output([self.fping, '-v']),'utf-8').find('csv') < 0:
                 raise SystemError('Acceptable version of fping executable not '
                                   'found.')
         self.results = dict()
@@ -179,10 +179,11 @@ class FastPing(object):
         """
         pool = ThreadPool(self.num_pools)
         raw_results = pool.map(self.get_results, commands)
+        raw_results_new = [str(i,'utf-8') for i in raw_results]
         pool.close()
         pool.join()
         self.results = {host: result for host, result in csv.reader(
-            ''.join(raw_results).splitlines())}
+            ''.join(raw_results_new).splitlines())}
         if not status:
             return self.results
         elif status == 'alive':
